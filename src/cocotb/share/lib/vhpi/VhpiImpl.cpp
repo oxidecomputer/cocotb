@@ -1094,7 +1094,11 @@ static int startup_callback(void *) {
 }
 
 static int shutdown_callback(void *) {
-    gpi_embed_end();
+    // Allow skipping Python cleanup for pure Rust tests
+    const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
+    if (!rust_mode || strcmp(rust_mode, "1") != 0) {
+        gpi_embed_end();
+    }
     return 0;
 }
 
