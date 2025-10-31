@@ -1082,7 +1082,12 @@ static int startup_callback(void *) {
         vhpi_release_handle(tool);
     }
 
-    gpi_embed_init(tool_argc, tool_argv);
+    // Allow skipping Python initialization for pure Rust tests
+    // Set COCOTB_RUST_MODE=1 to use GPI without Python
+    const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
+    if (!rust_mode || strcmp(rust_mode, "1") != 0) {
+        gpi_embed_init(tool_argc, tool_argv);
+    }
     delete[] tool_argv;
 
     return 0;
@@ -1123,7 +1128,13 @@ void VhpiImpl::main() noexcept {
     m_sim_finish_cb = shutdown_cb;
 
     gpi_register_impl(this);
-    gpi_entry_point();
+
+    // Allow skipping Python initialization for pure Rust tests
+    // Set COCOTB_RUST_MODE=1 to use GPI without Python
+    const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
+    if (!rust_mode || strcmp(rust_mode, "1") != 0) {
+        gpi_entry_point();
+    }
 }
 
 static void vhpi_main() {
