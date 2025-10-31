@@ -1132,13 +1132,7 @@ void VhpiImpl::main() noexcept {
     m_sim_finish_cb = shutdown_cb;
 
     gpi_register_impl(this);
-
-    // Allow skipping Python initialization for pure Rust tests
-    // Set COCOTB_RUST_MODE=1 to use GPI without Python
-    const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
-    if (!rust_mode || strcmp(rust_mode, "1") != 0) {
-        gpi_entry_point();
-    }
+    gpi_entry_point();
 }
 
 static void vhpi_main() {
