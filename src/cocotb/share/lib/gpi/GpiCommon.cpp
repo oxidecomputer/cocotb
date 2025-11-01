@@ -162,6 +162,7 @@ static void gpi_load_libs(std::vector<std::string> to_load) {
 }
 
 void gpi_entry_point() {
+    LOG_WARN("Calling gpi_entry_point");
     const char *log_level = getenv("GPI_LOG_LEVEL");
     if (log_level) {
         static const std::map<std::string, int> log_level_str_table = {
@@ -201,7 +202,14 @@ void gpi_entry_point() {
     }
 
     /* Finally embed Python */
-    embed_init_python();
+    // Allow skipping Python initialization for pure Rust tests
+    const char* rust_mode = getenv("COCOTB_RUST_MODE");
+    if (rust_mode && strcmp(rust_mode, "1") == 0) {
+        LOG_INFO("COCOTB_RUST_MODE=1: Skipping Python initialization");
+    }
+    else {
+        embed_init_python();
+    }
     gpi_print_registered_impl();
 }
 

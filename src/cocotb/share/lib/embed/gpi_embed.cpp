@@ -72,12 +72,6 @@ static int get_interpreter_path(wchar_t *path, size_t path_size) {
 
 /** Initialize the Python interpreter */
 extern "C" COCOTB_EXPORT void _embed_init_python(void) {
-    // Allow skipping Python initialization for pure Rust tests
-    const char* rust_mode = getenv("COCOTB_RUST_MODE");
-    if (rust_mode && strcmp(rust_mode, "1") == 0) {
-        LOG_INFO("COCOTB_RUST_MODE=1: Skipping Python initialization");
-        return;
-    }
 
     if (python_init_called) {
         // LCOV_EXCL_START

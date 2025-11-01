@@ -18,6 +18,7 @@ using bufSize_type = decltype(vhpiValueT::bufSize);
 
 // Main entry point for callbacks from simulator
 void handle_vhpi_callback(const vhpiCbDataT *cb_data) {
+    LOG_INFO("🔔 VHPI: handle_vhpi_callback entered! reason=%d", cb_data->reason);
     gpi_to_user();
 
     VhpiCbHdl *cb_hdl = (VhpiCbHdl *)cb_data->user_data;
@@ -30,10 +31,12 @@ void handle_vhpi_callback(const vhpiCbDataT *cb_data) {
     }
     // LCOV_EXCL_STOP
 
+    LOG_INFO("🔔 VHPI: About to call cb_hdl->run()");
     if (cb_hdl->run()) {
         // sim failed, so call shutdown
         gpi_embed_end();
     }
+    LOG_INFO("🔔 VHPI: handle_vhpi_callback completed");
 
     gpi_to_simulator();
 }
@@ -558,6 +561,7 @@ int VhpiLogicSignalObjHdl::set_signal_value(int32_t value,
         }
     }
 
+    LOG_INFO("VHPI: Setting signal value to %d", value);
     if (vhpi_put_value(GpiObjHdl::get_handle<vhpiHandleT>(), &m_value,
                        map_put_value_mode(action))) {
         check_vhpi_error();
@@ -778,6 +782,7 @@ int VhpiSignalObjHdl::set_signal_value_str(std::string &value,
 }
 
 const char *VhpiSignalObjHdl::get_signal_value_binstr() {
+    LOG_INFO("VHPI: Getting value as binstr");
     switch (m_value.format) {
         case vhpiRealVal:
             LOG_INFO("VHPI: get_signal_value_binstr not supported for %s",
@@ -876,32 +881,44 @@ VhpiValueCbHdl::VhpiValueCbHdl(GpiImplInterface *impl, VhpiSignalObjHdl *sig,
 }
 
 int VhpiValueCbHdl::run() {
+    LOG_INFO("🔔 VHPI: VhpiValueCbHdl::run() called for signal %s, edge_type=%d",
+              m_signal->get_fullname_str(), m_edge);
+
     // LCOV_EXCL_START
     if (m_removed) {
         // Only call up if not removed.
+        LOG_INFO("🔔 VHPI: Callback was already removed, skipping");
         return 0;
     }
     // LCOV_EXCL_STOP
 
     bool pass = false;
+    const char *signal_value = m_signal->get_signal_value_binstr();
+    LOG_INFO("🔔 VHPI: Signal value = %s", signal_value);
+
     switch (m_edge) {
         case GPI_RISING: {
-            pass = !strcmp(m_signal->get_signal_value_binstr(), "1");
+            pass = !strcmp(signal_value, "1");
+            LOG_INFO("🔔 VHPI: Checking GPI_RISING: pass=%d", pass);
             break;
         }
         case GPI_FALLING: {
-            pass = !strcmp(m_signal->get_signal_value_binstr(), "0");
+            pass = !strcmp(signal_value, "0");
+            LOG_INFO("🔔 VHPI: Checking GPI_FALLING: pass=%d", pass);
             break;
         }
         case GPI_VALUE_CHANGE: {
             pass = true;
+            LOG_INFO("🔔 VHPI: GPI_VALUE_CHANGE: pass=%d", pass);
             break;
         }
     }
 
     int res = 0;
     if (pass) {
+        LOG_INFO("🔔 VHPI: Edge condition passed! Calling user callback");
         res = m_cb_func(m_cb_data);
+        LOG_INFO("🔔 VHPI: User callback returned %d", res);
 
         // Remove recurring callback once fired
         auto err = vhpi_remove_cb(get_handle<vhpiHandleT>());
@@ -915,9 +932,12 @@ int VhpiValueCbHdl::run() {
         }
         // LCOV_EXCL_STOP
         else {
+            LOG_INFO("🔔 VHPI: Callback removed successfully, deleting handler");
             delete this;
         }
 
+    } else {
+        LOG_INFO("🔔 VHPI: Edge condition NOT passed, keeping callback active");
     }  // else Don't remove and let it fire again.
 
     return res;
