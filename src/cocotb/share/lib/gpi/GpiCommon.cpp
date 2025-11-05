@@ -117,7 +117,11 @@ void gpi_sim_end() {
 
 void gpi_cleanup(void) {
     CLEAR_STORE();
-    embed_sim_cleanup();
+    // Skip Python cleanup for pure Rust tests
+    const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
+    if (!rust_mode || strcmp(rust_mode, "1") != 0) {
+        embed_sim_cleanup();
+    }
 }
 
 static void gpi_load_libs(std::vector<std::string> to_load) {
