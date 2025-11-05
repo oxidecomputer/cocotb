@@ -1093,10 +1093,19 @@ static int startup_callback(void *) {
     return 0;
 }
 
+// Rust callback cleanup (defined in Rust crate when COCOTB_RUST_MODE=1)
+extern "C" {
+    void rust_callbacks_cleanup();
+}
+
 static int shutdown_callback(void *) {
     // Allow skipping Python cleanup for pure Rust tests
     const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
-    if (!rust_mode || strcmp(rust_mode, "1") != 0) {
+    if (rust_mode && strcmp(rust_mode, "1") == 0) {
+        // Rust mode: call Rust cleanup
+        rust_callbacks_cleanup();
+    } else {
+        // Python mode: call Python cleanup
         gpi_embed_end();
     }
     return 0;
@@ -1147,7 +1156,8 @@ static void register_impl() {
 
 // pre-defined VHPI registration table
 extern "C" {
-COCOTBVHPI_EXPORT void (*vhpi_startup_routines[])() = {vhpi_main, nullptr};
+// (katie) Removed so we control the startup
+//COCOTBVHPI_EXPORT void (*vhpi_startup_routines[])() = {vhpi_main, nullptr};
 
 // For non-VHPI compliant applications that cannot find vhpi_startup_routines
 COCOTBVHPI_EXPORT void vhpi_startup_routines_bootstrap() { vhpi_main(); }
