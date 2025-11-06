@@ -1082,12 +1082,16 @@ static int startup_callback(void *) {
         vhpi_release_handle(tool);
     }
 
+<<<<<<< HEAD
     // Allow skipping Python initialization for pure Rust tests
     // Set COCOTB_RUST_MODE=1 to use GPI without Python
     const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
     if (!rust_mode || strcmp(rust_mode, "1") != 0) {
         gpi_embed_init(tool_argc, tool_argv);
     }
+=======
+    gpi_start_of_sim_time(tool_argc, tool_argv);
+>>>>>>> master
     delete[] tool_argv;
 
     return 0;
@@ -1108,6 +1112,7 @@ static int shutdown_callback(void *) {
         // Python mode: call Python cleanup
         gpi_embed_end();
     }
+    gpi_end_of_sim_time();
     return 0;
 }
 
