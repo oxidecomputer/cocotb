@@ -1,0 +1,20 @@
+# Oxide cocotb fork
+
+This is a fork of cocotb. We use the cocotb shared libs as part of our Rust
+cosim testing. In order to do this, we change the startup and shutdown paths in
+[GPI](https://docs.cocotb.org/en/stable/library_reference_c.html) to not setup
+or tear down the Python runtime. These changes are concentrated within
+`src/cocotb/share` and are pretty intrusive.
+
+In general, I don't expect to update this repo often from the upstream nor push
+changes upstream. The upstream is almost certainly not interested in the change
+to Rust and as a result, their changes may break ours or necessitate a
+reanalysis of the GPI startup/teardown to eliminate Python. Similarly, we are
+uninterested in Python use-case, and our changes may break using Python.
+
+I still want to fork though for a couple reasons. First is attribution: the GPI
+layer is a cocotb-specific layer for compatability across different HDL C
+interfaces and simulators. The second is just in case we want to pull in
+anything from the upstream. There may be general fixes to code in the VHPI/GPI
+interfaces for subtle behaviors that we may want, and it is preferable to merge
+rather than patch.
