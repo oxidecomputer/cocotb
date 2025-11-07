@@ -224,12 +224,6 @@ static int gpi_load_users() {
     return 0;
 }
 
-#ifndef PYTHON_LIB
-#error "Name of Python library required"
-#else
-#define PYTHON_LIB_STR xstr(PYTHON_LIB)
-#endif
-
 void gpi_entry_point() {
     LOG_WARN("Calling gpi_entry_point");
     const char *log_level = getenv("GPI_LOG_LEVEL");
@@ -270,35 +264,10 @@ void gpi_entry_point() {
         gpi_load_libs(to_load);
     }
 
-    // preload Python library
-    char const *libpython_path = getenv("LIBPYTHON_LOC");
-    if (!libpython_path) {
-        // default to libpythonX.X.so
-        libpython_path = PYTHON_LIB_STR;
-    }
-    auto loaded = utils_dyn_open(libpython_path);
-    // LCOV_EXCL_START
-    if (!loaded) {
-        LOG_ERROR("Failed to preload Python library: %s", libpython_path);
-        return;
-    }
-    // LCOV_EXCL_STOP
-
-    /* Finally embed Python */
-<<<<<<< HEAD
-    // Allow skipping Python initialization for pure Rust tests
-    const char* rust_mode = getenv("COCOTB_RUST_MODE");
-    if (rust_mode && strcmp(rust_mode, "1") == 0) {
-        LOG_INFO("COCOTB_RUST_MODE=1: Skipping Python initialization");
-    }
-    else {
-        embed_init_python();
-=======
+    gpi_print_registered_impl();
     if (!gpi_load_users()) {
         return;
->>>>>>> master
     }
-    gpi_print_registered_impl();
 }
 
 void gpi_get_sim_time(uint32_t *high, uint32_t *low) {
