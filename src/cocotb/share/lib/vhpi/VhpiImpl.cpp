@@ -1095,11 +1095,7 @@ extern "C" {
 
 static int shutdown_callback(void *) {
     // Allow skipping Python cleanup for pure Rust tests
-    const char* rust_mode = std::getenv("COCOTB_RUST_MODE");
-    if (rust_mode && strcmp(rust_mode, "1") == 0) {
-        // Rust mode: call Rust cleanup
-        rust_callbacks_cleanup();
-    } 
+    rust_callbacks_cleanup();
     gpi_end_of_sim_time();
     return 0;
 }
