@@ -782,10 +782,10 @@ int VhpiSignalObjHdl::set_signal_value_str(std::string &value,
 }
 
 const char *VhpiSignalObjHdl::get_signal_value_binstr() {
-    LOG_INFO("VHPI: Getting value as binstr");
+    LOG_DEBUG("VHPI: Getting value as binstr");
     switch (m_value.format) {
         case vhpiRealVal:
-            LOG_INFO("VHPI: get_signal_value_binstr not supported for %s",
+            LOG_ERROR("VHPI: get_signal_value_binstr not supported for %s",
                      ((VhpiImpl *)GpiObjHdl::m_impl)
                          ->format_to_string(m_value.format));
             return "";
