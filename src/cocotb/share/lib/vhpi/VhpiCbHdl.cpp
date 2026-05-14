@@ -561,7 +561,7 @@ int VhpiLogicSignalObjHdl::set_signal_value(int32_t value,
         }
     }
 
-    LOG_INFO("VHPI: Setting signal value to %d", value);
+    LOG_DEBUG("VHPI: Setting signal value to %d", value);
     if (vhpi_put_value(GpiObjHdl::get_handle<vhpiHandleT>(), &m_value,
                        map_put_value_mode(action))) {
         check_vhpi_error();
